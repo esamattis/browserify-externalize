@@ -1,10 +1,11 @@
 {
   "name": "browserify-externalize",
   "version": "0.1.0",
-  "description": "Create external Browserify bundles easily",
+  "description": "Create external Browserify bundles for lazy asynchronous loading",
   "main": "index.js",
   "keywords": [
-    "browserify"
+    "browserify",
+    "require"
   ],
   "scripts": {
     "test": "tap test/*.js"
