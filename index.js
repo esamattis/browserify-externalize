@@ -75,7 +75,7 @@ BundleManager.prototype.externalize = function(_cb) {
             // Walk through each in the external bundle
             ext.modules.forEach(function(extModule) {
 
-                // Whether parent bundle has a require call to this module
+                // Whether the parent bundle has a require call to this module
                 var parentModuleDepends = filteredParentModules.some(function(parentModule) {
                     return Object.keys(parentModule.deps).some(function(depKey) {
                         return parentModule.deps[depKey] === extModule.id;
@@ -108,7 +108,7 @@ BundleManager.prototype.externalize = function(_cb) {
     });
 };
 
-module.exports = function (parent, externals, cb) {
+module.exports = function(parent, externals, cb) {
     var bm = new BundleManager(parent, [].concat(externals));
     bm.externalize(cb);
 };
