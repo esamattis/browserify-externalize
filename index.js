@@ -4,70 +4,112 @@ var mdeps = require('module-deps');
 var concatStream = require('concat-stream');
 var EventEmitter = require("events").EventEmitter;
 
-function BundleManager(bundles) {
-    this.bundles = bundles;
-    this.bundles.forEach(function(b) {
-        b.on("_ready", function() {
-            if (this.isAllReady()) {
-                this.emit("ready");
+function BundleManager(parent, externalBundles) {
+    this.parent = parent;
+    this.externalBundles = externalBundles;
+
+    var self = this;
+    this.externals = [];
+
+    externalBundles.forEach(function(b) {
+        self.modules(b, function(err, modules) {
+            if (err) return self.emit("error", err);
+            self.externals.push({
+                bundle: b,
+                modules: modules
+            });
+            if (self.areModulesReady()) {
+                self.emit("modules-ready");
             }
-        }.bind(this));
-    }.bind(this));
+        });
+    });
 }
 
 util.inherits(BundleManager, EventEmitter);
 
-BundleManager.prototype.isAllReady = function() {
-    return this.bundles.every(function(b) {
-        return b._pending === 0;
-    });
+/**
+ * Find out all dependencies of a bundle
+ **/
+BundleManager.prototype.modules = function(bundle, cb) {
+    if (bundle._pending === 0) {
+        // Dependencies can be resolved only when bundle.files is populated
+        mdeps(bundle.files).pipe(concatStream(cb));
+    }
+    else {
+        // If not ready wait until it is
+        bundle.once("_ready", this.modules.bind(this, bundle, cb));
+    }
+};
+
+BundleManager.prototype.areModulesReady = function() {
+    return this.externalBundles.length === this.externals.length;
 };
 
 
-function externalize(parentBundle, externals, cb) {
-    if (!Array.isArray(externals)) externals = [externals];
-    var bm = new BundleManager([parentBundle].concat(externals));
-    if (!bm.isAllReady()) {
-        return bm.once("ready", function() {
-            externalize(parentBundle, externals, cb);
-        });
+BundleManager.prototype.externalize = function(_cb) {
+
+    if (!this.areModulesReady()) {
+        return this.once("modules-ready", this.externalize.bind(this, _cb));
     }
 
-    var count = externals.length;
-    mdeps(parentBundle.files).pipe(concatStream(function(err, parentModules) {
-        externals.forEach(function(extBundle) {
-            mdeps(extBundle.files).pipe(concatStream(function(err, extModules) {
+    // Make sure the callback is called only once
+    var cb = function(err) {
+        _cb(err);
+        _cb = function() {};
+    };
 
-                console.error("DOING MY SHIT!");
+    this.on("error", cb);
 
-                var filteredParentModules = parentModules.filter(function(parentDep) {
-                    // Pick only those that are not in the external bundle
-                    return !extModules.some(function(extModule) {
-                        return parentDep.id === extModule.id;
+    var self = this;
+    self.modules(self.parent, function(err, parentModules) {
+        if (err) return cb(err);
+        self.externals.forEach(function(ext) {
+
+            // Create tree of parent modules without the external bundle modules
+            var filteredParentModules = parentModules.filter(function(parentDep) {
+                return !ext.modules.some(function(extModule) {
+                    return parentDep.id === extModule.id;
+                });
+            });
+
+            // Walk through each in the external bundle
+            ext.modules.forEach(function(extModule) {
+
+                // Whether parent bundle has a require call to this module
+                var parentModuleDepends = filteredParentModules.some(function(parentModule) {
+                    return Object.keys(parentModule.deps).some(function(depKey) {
+                        return parentModule.deps[depKey] === extModule.id;
                     });
                 });
 
-                extModules.forEach(function(extModule) {
-                    var parentModuleDepends = filteredParentModules.some(function(parentModule) {
-                        return Object.keys(parentModule.deps).some(function(depKey) {
-                            return parentModule.deps[depKey] === extModule.id;
-                        });
-                    });
-
-                    if (parentModuleDepends && !extBundle.exports[extModule.id]) {
-                        console.error("parent depends on ext module", extModule.id, "making requireable!");
-                        parentBundle.require(extModule.id);
-                        extBundle.external(extModule.id);
-                    }
-                    else {
-                        console.error("removing", extModule.id, "from parent");
-                        parentBundle.external(extModule.id);
-                    }
-                });
-                if (--count === 0) cb();
-            }));
+                if (parentModuleDepends && !ext.bundle.exports[extModule.id]) {
+                    // Shared module:
+                    // Parent and the external module uses this  module. Make
+                    // it requireable from the parent bundle and remove it from
+                    // the external bundle.
+                    self.parent.require(extModule.id);
+                    ext.bundle.external(extModule.id);
+                }
+                else {
+                    // Explicitly external bundle:
+                    // User marked this module as requireable on the external
+                    // bundle using `externalBundle.require(module)`. Remove
+                    // the module from the parent bundle even if it has a
+                    // require call to it. That require call will start working
+                    // again when this external bundle is added to the dom.
+                    // This will also remove all inner dependencies of the
+                    // external module from the parent bundle.
+                    self.parent.external(extModule.id);
+                }
+            });
         });
-    }));
-}
 
-module.exports = externalize;
+        cb();
+    });
+};
+
+module.exports = function (parent, externals, cb) {
+    var bm = new BundleManager(parent, [].concat(externals));
+    bm.externalize(cb);
+};
+
