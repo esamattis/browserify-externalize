@@ -7,7 +7,7 @@ var fs = require("fs");
 var externalize = require("../index");
 
 test('require module from external bundle', function (t) {
-    t.plan(6);
+    t.plan(7);
 
     var parentBundle = browserify([__dirname + '/external_bundle_require/app.js']);
 
@@ -29,6 +29,10 @@ test('require module from external bundle', function (t) {
                 t.notOk(
                     extSrc.match(/SHARED MODULE/),
                     "shared module code is not in external bundle"
+                );
+                t.notOk(
+                    parentSrc.match(/INNER DEP/),
+                    "inner dependency of external.js must not appear in parent bundle"
                 );
                 var c = {
                     window: {},
