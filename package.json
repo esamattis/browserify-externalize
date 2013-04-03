@@ -1,8 +1,11 @@
 {
   "name": "browserify-externalize",
   "version": "0.1.0",
-  "description": "Asynchronous bundle loading with Browserify",
+  "description": "Create external Browserify bundles easily",
   "main": "index.js",
+  "keywords": [
+    "browserify"
+  ],
   "scripts": {
     "test": "tap test/*.js"
   },
