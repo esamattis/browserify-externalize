@@ -13,8 +13,8 @@ Create two bundles where the second one is a subset of the first the one and
 call `externalize(first, second, callback)` on them. It will do following:
 
   1. Moves all modules that are used in both to the first one
-  1. Removes those modules from the first one that are requireable in the
-     second one
+  1. Removes those modules from the first one that are explicitly requireable
+     in the second one
   1. It generally tries to do the "right thing"
 
 Example:
@@ -31,7 +31,9 @@ require("./external"); // would not work here
 // Create callback for the second bundle
 window.secondBundleCallback = function() {
     var value = require("./external");
-    alert("external bundle loaded: " + value);
+
+    // Alerts: external module: external module contents
+    alert("external module: " + value);
 }
 
 jQuery.getScript("bundle/second.js");
@@ -56,23 +58,22 @@ setTimeout(function(){
 build script:
 
 ```javascript
-    var fs = require("fs");
-    var browserify = require("browserify");
-    var externalize = require("browserify-externalize");
+var fs = require("fs");
+var browserify = require("browserify");
+var externalize = require("browserify-externalize");
 
-    var main = browserify("./index.js");
-    var second = browserify("./index2.js");
+var main = browserify("./index.js");
+var second = browserify("./index2.js");
 
-    // Make external module only available in the second bundle
-    second.require("./external.js");
+// Make external module explicitly available when the second bundle is added to
+// the dom
+second.require("./external.js");
 
-    externalize(main, second, function(err) {
-        if (err) throw err;
+externalize(main, second, function(err) {
+    if (err) throw err;
 
-        // Write bundles to files after externalization
-        main.bundle.pipe(fs.createWriteStream("bundle/main.js");
-        second.bundle.pipe(fs.createWriteStream("bundle/second.js");
-    });
-
-
+    // Write bundles to files after externalization
+    main.bundle.pipe(fs.createWriteStream("bundle/main.js");
+    second.bundle.pipe(fs.createWriteStream("bundle/second.js");
+});
 ```
