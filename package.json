@@ -1,0 +1,19 @@
+{
+  "name": "externalize",
+  "version": "0.1.0",
+  "description": "Asynchronous bundle loading with Browserify",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap test/*.js"
+  },
+  "repository": "https://github.com/epeli/node-externalize",
+  "author": "Esa-Matti Suuronen",
+  "license": "MIT",
+  "dependencies": {
+    "module-deps": "~0.6.1",
+    "concat-stream": "~0.1.1"
+  },
+  "devDependencies": {
+    "tap": "~0.4.1"
+  }
+}
