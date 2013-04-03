@@ -10,7 +10,7 @@
   "scripts": {
     "test": "tap test/*.js"
   },
-  "repository": "https://github.com/epeli/node-externalize",
+  "repository": "https://github.com/epeli/browserify-externalize",
   "author": "Esa-Matti Suuronen",
   "license": "MIT",
   "dependencies": {
