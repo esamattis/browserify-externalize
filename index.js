@@ -4,25 +4,16 @@ var mdeps = require('module-deps');
 var concatStream = require('concat-stream');
 var EventEmitter = require("events").EventEmitter;
 
-function BundleManager(parent, externalBundles) {
-    this.parent = parent;
-    this.externalBundles = externalBundles;
-
+function BundleManager(bundles) {
     var self = this;
-    this.externals = [];
 
-    externalBundles.forEach(function(b) {
-        self.modules(b, function(err, modules) {
-            if (err) return self.emit("error", err);
-            self.externals.push({
-                bundle: b,
-                modules: modules
-            });
-            if (self.areModulesReady()) {
-                self.emit("modules-ready");
-            }
-        });
+    // Wrap bundles to objects containing modules
+    this.bundles = bundles.map(function(bundle) {
+        var bWrap = { bundle: bundle };
+        self.resolveModules(bWrap);
+        return bWrap;
     });
+
 }
 
 util.inherits(BundleManager, EventEmitter);
@@ -30,19 +21,26 @@ util.inherits(BundleManager, EventEmitter);
 /**
  * Find out all dependencies of a bundle
  **/
-BundleManager.prototype.modules = function(bundle, cb) {
-    if (bundle._pending === 0) {
+BundleManager.prototype.resolveModules = function(bWrap) {
+    var self = this;
+
+    if (bWrap.bundle._pending === 0) {
         // Dependencies can be resolved only when bundle.files is populated
-        mdeps(bundle.files).pipe(concatStream(cb));
+        mdeps(bWrap.bundle.files).pipe(concatStream(function(err, modules) {
+            bWrap.modules = modules;
+            if (self.areModulesReady()) self.emit("modules-ready");
+        }));
     }
     else {
         // If not ready wait until it is
-        bundle.once("_ready", this.modules.bind(this, bundle, cb));
+        bWrap.bundle.once("_ready", this.resolveModules.bind(this, bWrap));
     }
 };
 
 BundleManager.prototype.areModulesReady = function() {
-    return this.externalBundles.length === this.externals.length;
+    return this.bundles.every(function(bWrap) {
+        return bWrap.modules;
+    });
 };
 
 
@@ -60,56 +58,57 @@ BundleManager.prototype.externalize = function(_cb) {
 
     this.on("error", cb);
 
-    var self = this;
-    self.modules(self.parent, function(err, parentModules) {
-        if (err) return cb(err);
-        self.externals.forEach(function(ext) {
+    var parent = this.bundles[0].bundle;
+    var parentModules = this.bundles[0].modules;
+    var externals = this.bundles.slice(1);
 
-            // Create tree of parent modules without the external bundle modules
-            var filteredParentModules = parentModules.filter(function(parentDep) {
-                return !ext.modules.some(function(extModule) {
-                    return parentDep.id === extModule.id;
-                });
-            });
+    externals.forEach(function(ext) {
 
-            // Walk through each in the external bundle
-            ext.modules.forEach(function(extModule) {
-
-                // Whether the parent bundle has a require call to this module
-                var parentModuleDepends = filteredParentModules.some(function(parentModule) {
-                    return Object.keys(parentModule.deps).some(function(depKey) {
-                        return parentModule.deps[depKey] === extModule.id;
-                    });
-                });
-
-                if (parentModuleDepends && !ext.bundle.exports[extModule.id]) {
-                    // Shared module:
-                    // Parent and the external module uses this  module. Make
-                    // it requireable from the parent bundle and remove it from
-                    // the external bundle.
-                    self.parent.require(extModule.id);
-                    ext.bundle.external(extModule.id);
-                }
-                else {
-                    // Explicitly external bundle:
-                    // User marked this module as requireable on the external
-                    // bundle using `externalBundle.require(module)`. Remove
-                    // the module from the parent bundle even if it has a
-                    // require call to it. That require call will start working
-                    // again when this external bundle is added to the dom.
-                    // This will also remove all inner dependencies of the
-                    // external module from the parent bundle.
-                    self.parent.external(extModule.id);
-                }
+        // Create tree of parent modules without the external bundle modules
+        var filteredParentModules = parentModules.filter(function(parentDep) {
+            return !ext.modules.some(function(extModule) {
+                return parentDep.id === extModule.id;
             });
         });
 
-        cb();
+        // Walk through each in the external bundle
+        ext.modules.forEach(function(extModule) {
+
+            // Whether the parent bundle has a require call to this module
+            var parentModuleDepends = filteredParentModules.some(function(parentModule) {
+                return Object.keys(parentModule.deps).some(function(depKey) {
+                    return parentModule.deps[depKey] === extModule.id;
+                });
+            });
+
+            if (parentModuleDepends && !ext.bundle.exports[extModule.id]) {
+                // Shared module:
+                // Parent and the external module uses this  module. Make
+                // it requireable from the parent bundle and remove it from
+                // the external bundle.
+                parent.require(extModule.id);
+                ext.bundle.external(extModule.id);
+            }
+            else {
+                // Explicitly external bundle:
+                // User marked this module as requireable on the external
+                // bundle using `externalBundle.require(module)`. Remove
+                // the module from the parent bundle even if it has a
+                // require call to it. That require call will start working
+                // again when this external bundle is added to the dom.
+                // This will also remove all inner dependencies of the
+                // external module from the parent bundle.
+                parent.external(extModule.id);
+            }
+        });
     });
+
+    cb();
 };
 
 module.exports = function(parent, externals, cb) {
-    var bm = new BundleManager(parent, [].concat(externals));
+    var bm = new BundleManager([parent].concat(externals));
+    // var bm = new BundleManager(parent, [].concat(externals));
     bm.externalize(cb);
 };
 
