@@ -65,7 +65,7 @@ BundleManager.prototype.externalize = function(_cb) {
     externals.forEach(function(ext) {
 
         // Create tree of parent modules without the external bundle modules
-        var filteredParentModules = parentModules.filter(function(parentDep) {
+        var filteredParent = parentModules.filter(function(parentDep) {
             return !ext.modules.some(function(extModule) {
                 return parentDep.id === extModule.id;
             });
@@ -75,17 +75,17 @@ BundleManager.prototype.externalize = function(_cb) {
         ext.modules.forEach(function(extModule) {
 
             // Whether the parent bundle has a require call to this module
-            var parentModuleDepends = filteredParentModules.some(function(parentModule) {
+            var parentDepends = filteredParent.some(function(parentModule) {
                 return Object.keys(parentModule.deps).some(function(depKey) {
                     return parentModule.deps[depKey] === extModule.id;
                 });
             });
 
-            if (parentModuleDepends && !ext.bundle.exports[extModule.id]) {
+            if (parentDepends && !ext.bundle.exports[extModule.id]) {
                 // Shared module:
-                // Parent and the external module uses this  module. Make
-                // it requireable from the parent bundle and remove it from
-                // the external bundle.
+                // Parent and the external bundle uses this  module. Make it
+                // requireable from the parent bundle and remove it from the
+                // external bundle.
                 parent.require(extModule.id);
                 ext.bundle.external(extModule.id);
             }
