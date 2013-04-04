@@ -18,15 +18,14 @@ function BundleManager(bundles) {
 
 util.inherits(BundleManager, EventEmitter);
 
-/**
- * Find out all dependencies of a bundle
- **/
+
 BundleManager.prototype.resolveModules = function(bWrap) {
     var self = this;
 
     if (bWrap.bundle._pending === 0) {
         // Dependencies can be resolved only when bundle.files is populated
         mdeps(bWrap.bundle.files).pipe(concatStream(function(err, modules) {
+            if (err) return self.emit("error", err);
             bWrap.modules = modules;
             if (self.areModulesReady()) self.emit("modules-ready");
         }));
