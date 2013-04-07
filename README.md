@@ -1,3 +1,4 @@
+[![build status](https://secure.travis-ci.org/epeli/browserify-externalize.png)](http://travis-ci.org/epeli/browserify-externalize)
 
 # Browserify Externalize
 
