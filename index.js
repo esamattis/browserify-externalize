@@ -73,6 +73,7 @@ BundleManager.prototype.externalize = function(_cb) {
         // Walk through each in the external bundle
         ext.modules.forEach(function(extModule) {
 
+
             // Whether the parent bundle has a require call to this module
             var parentDepends = filteredParent.some(function(parentModule) {
                 return Object.keys(parentModule.deps).some(function(depKey) {
@@ -87,6 +88,9 @@ BundleManager.prototype.externalize = function(_cb) {
                 // external bundle.
                 parent.require(extModule.id);
                 ext.bundle.external(extModule.id);
+                // Push module back to parent modules so that inner
+                // dependencies of shared modules get added back too
+                filteredParent.push(extModule);
             }
             else {
                 // Explicitly external bundle:
