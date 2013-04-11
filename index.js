@@ -24,7 +24,11 @@ BundleManager.prototype.resolveModules = function(bWrap) {
 
     if (bWrap.bundle._pending === 0) {
         // Dependencies can be resolved only when bundle.files is populated
-        mdeps(bWrap.bundle.files).pipe(concatStream(function(err, modules) {
+        var opts = {
+            resolve: bWrap.bundle._resolve.bind(bWrap.bundle)
+        };
+
+        mdeps(bWrap.bundle.files, opts).pipe(concatStream(function(err, modules) {
             if (err) return self.emit("error", err);
             bWrap.modules = modules;
             if (self.areModulesReady()) self.emit("modules-ready");
