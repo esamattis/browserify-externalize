@@ -74,40 +74,51 @@ BundleManager.prototype.externalize = function(_cb) {
             });
         });
 
-        // Walk through each in the external bundle
-        ext.modules.forEach(function(extModule) {
-
-
+        function parentNeeds(extModule) {
             // Whether the parent bundle has a require call to this module
-            var parentDepends = filteredParent.some(function(parentModule) {
+            var depends = filteredParent.some(function(parentModule) {
                 return Object.keys(parentModule.deps).some(function(depKey) {
                     return parentModule.deps[depKey] === extModule.id;
                 });
             });
+            // Parent doesn't really need this module even if it has a require
+            // call to it if it is moved to external bundle by the user
+            var requireMoved = ext.bundle.exports[extModule.id];
+            return depends && !requireMoved;
+        }
 
-            if (parentDepends && !ext.bundle.exports[extModule.id]) {
-                // Shared module:
-                // Parent and the external bundle uses this  module. Make it
+        var i, extModule, parentMissing;
+
+        // Shared modules
+        for (i = 0; i < ext.modules.length; i += 1) {
+            extModule = ext.modules[i];
+            parentMissing = filteredParent.indexOf(extModule) === -1;
+            if (parentNeeds(extModule) && parentMissing) {
+                // Parent and the external bundle uses this module. Make it
                 // requireable from the parent bundle and remove it from the
                 // external bundle.
                 parent.require(extModule.id);
                 ext.bundle.external(extModule.id);
-                // Push module back to parent modules so that inner
-                // dependencies of shared modules get added back too
+                // Put the module back to parent module list and start loop
+                // from begining to get it's dependencies too.
                 filteredParent.push(extModule);
+                i = 0;
             }
-            else {
-                // Explicitly external bundle:
-                // User marked this module as requireable on the external
-                // bundle using `externalBundle.require(module)`. Remove
-                // the module from the parent bundle even if it has a
+        }
+
+        // External only modules
+        for (i = 0; i < ext.modules.length; i += 1) {
+            extModule = ext.modules[i];
+            if (!parentNeeds(extModule)) {
+                // Remove the module from the parent bundle even if it has a
                 // require call to it. That require call will start working
-                // again when this external bundle is added to the dom.
-                // This will also remove all inner dependencies of the
-                // external module from the parent bundle.
+                // again when this external bundle is added to the dom. This
+                // will also remove all inner dependencies of the external
+                // module from the parent bundle.
                 parent.external(extModule.id);
             }
-        });
+        }
+
     });
 
     cb();
