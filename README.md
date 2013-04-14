@@ -2,7 +2,7 @@
 
 # Browserify Externalize
 
-Create external Browserify bundles for lazy asynchronous loading.
+Create external [Browserify][] bundles for lazy asynchronous loading
 
 ## Install
 
@@ -56,8 +56,6 @@ externalize(parent, subset, function(err) {
 index.js
 
 ```javascript
-alert("parent bundle loaded");
-
 // would not work here because external.js is externalized to the subset bundle
 // require("./external");
 
@@ -65,7 +63,6 @@ alert("parent bundle loaded");
 // again
 jQuery.getScript("bundle/second.js", function(){
     var value = require("./external");
-
     // Alerts: "external module: external module contents"
     alert("external module: " + value);
 });
@@ -77,3 +74,4 @@ external.js:
 module.exports = "external module contents";
 ```
 
+[Browserify]: https://github.com/substack/node-browserify
