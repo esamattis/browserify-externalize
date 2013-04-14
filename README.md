@@ -90,3 +90,8 @@ Some others include:
  - [basket.js](http://addyosmani.github.io/basket.js/)
 
 [Browserify]: https://github.com/substack/node-browserify
+[getscript]: http://api.jquery.com/jQuery.getScript/
+[$script.js]: https://github.com/ded/script.js
+[$script.js-npm]: https://npmjs.org/package/scriptjs
+[modern]: https://gist.github.com/epeli/5384178
+
