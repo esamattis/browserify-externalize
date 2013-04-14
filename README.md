@@ -53,7 +53,7 @@ externalize(parent, subset, function(err) {
 });
 ```
 
-index.js
+index.js:
 
 ```javascript
 // require("./external");
