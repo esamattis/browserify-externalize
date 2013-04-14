@@ -4,6 +4,15 @@ var mdeps = require('module-deps');
 var concatStream = require('concat-stream');
 var EventEmitter = require("events").EventEmitter;
 
+function once(fn) {
+    var ran;
+    return function() {
+        if (ran) return;
+        ran = true;
+        return fn.apply(this, arguments);
+    };
+}
+
 function BundleManager(bundles) {
     var self = this;
 
@@ -47,17 +56,12 @@ BundleManager.prototype.areModulesReady = function() {
 };
 
 
-BundleManager.prototype.externalize = function(_cb) {
+BundleManager.prototype.externalize = function(cb) {
+    cb = once(cb);
 
     if (!this.areModulesReady()) {
-        return this.once("modules-ready", this.externalize.bind(this, _cb));
+        return this.once("modules-ready", this.externalize.bind(this, cb));
     }
-
-    // Make sure the callback is called only once
-    var cb = function(err) {
-        _cb(err);
-        _cb = function() {};
-    };
 
     this.on("error", cb);
 
@@ -124,9 +128,17 @@ BundleManager.prototype.externalize = function(_cb) {
     cb();
 };
 
-module.exports = function(parent, externals, cb) {
-    var bm = new BundleManager([parent].concat(externals));
-    // var bm = new BundleManager(parent, [].concat(externals));
-    bm.externalize(cb);
+module.exports = function(parents, externals, cb) {
+    cb = once(cb);
+    parents = [].concat(parents);
+    var count = parents.length;
+    parents.forEach(function(parent) {
+        var bm = new BundleManager([parent].concat(externals));
+        bm.externalize(function(err) {
+            count--;
+            if (err) return cb(err);
+            if (count === 0) return cb();
+        });
+    });
 };
 
