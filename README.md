@@ -74,4 +74,19 @@ external.js:
 module.exports = "external module contents";
 ```
 
+## Script loaders
+
+You need a script loader to load the external bundles. There is one in
+[jQuery][getscript]. If you don't use jQuery you can grab [$script.js][]
+from [npm][script.js-npm] or implement your [own][modern] for modern browsers
+easily.
+
+Some others include:
+
+ - [yepnope](http://yepnopejs.com/)
+ - [head.js](http://headjs.com/)
+ - [lab.js](http://labjs.com/)
+ - [lazyload](https://github.com/rgrove/lazyload/)
+ - [basket.js](http://addyosmani.github.io/basket.js/)
+
 [Browserify]: https://github.com/substack/node-browserify
