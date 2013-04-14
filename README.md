@@ -41,15 +41,15 @@ var externalize = require("externalize");
 var parent = browserify("./index.js");
 
 // Make subset bundle from external.js by making it explicitly requireable
-var second = browserify().require("./external.js");
+var subset = browserify().require("./external.js");
 
 // Remove the subset bundle code from the parent
 externalize(parent, subset, function(err) {
     if (err) throw err;
 
     // Write bundles to files after externalization
-    parent.bundle.pipe(fs.createWriteStream("bundle/parent.js");
-    second.bundle.pipe(fs.createWriteStream("bundle/second.js");
+    parent.bundle().pipe(fs.createWriteStream("bundle/parent.js"));
+    subset.bundle().pipe(fs.createWriteStream("bundle/subset.js"));
 });
 ```
 
@@ -61,7 +61,7 @@ index.js:
 
 // Use any script loader to load the subset bundle to make the require work
 // again
-jQuery.getScript("bundle/second.js", function(){
+jQuery.getScript("bundle/subset.js", function(){
     var value = require("./external");
     // Alerts: "external module: external module contents"
     alert("external module: " + value);

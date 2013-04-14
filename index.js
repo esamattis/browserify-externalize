@@ -130,7 +130,7 @@ BundleManager.prototype.externalize = function(cb) {
     cb();
 };
 
-module.exports = function(parents, externals, cb) {
+module.exports = function externalize(parents, externals, cb) {
     cb = once(cb);
     parents = [].concat(parents);
     var count = parents.length;
