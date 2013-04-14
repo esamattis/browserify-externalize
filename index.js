@@ -31,10 +31,12 @@ util.inherits(BundleManager, EventEmitter);
 BundleManager.prototype.resolveModules = function(bWrap) {
     var self = this;
 
+    // Dependencies can be resolved only when bundle.files is populated
     if (bWrap.bundle._pending === 0) {
-        // Dependencies can be resolved only when bundle.files is populated
         var opts = {
-            resolve: bWrap.bundle._resolve.bind(bWrap.bundle)
+            resolve: bWrap.bundle._resolve.bind(bWrap.bundle),
+            transform: bWrap.bundle._transforms,
+            transformKey: [ 'browserify', 'transform' ]
         };
 
         mdeps(bWrap.bundle.files, opts).pipe(concatStream(function(err, modules) {
