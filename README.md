@@ -56,8 +56,8 @@ externalize(parent, subset, function(err) {
 index.js
 
 ```javascript
-// would not work here because external.js is externalized to the subset bundle
 // require("./external");
+// Would not work here because external.js is externalized to the subset bundle
 
 // Use any script loader to load the subset bundle to make the require work
 // again
