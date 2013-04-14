@@ -78,7 +78,7 @@ module.exports = "external module contents";
 
 You need a script loader to load the external bundles. There is one in
 [jQuery][getscript]. If you don't use jQuery you can grab [$script.js][]
-from [npm][script.js-npm] or implement your [own][modern] for modern browsers
+from [npm][$script.js-npm] or implement your [own][modern] for modern browsers
 easily.
 
 Some others include:
