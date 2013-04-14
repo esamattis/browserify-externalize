@@ -1,12 +1,12 @@
 [![build status](https://secure.travis-ci.org/epeli/browserify-externalize.png)](http://travis-ci.org/epeli/browserify-externalize)
 
-# Browserify Externalize
+# externalize
 
 Create external [Browserify][] bundles for lazy asynchronous loading
 
 ## Install
 
-    npm install browserify-externalize
+    npm install externalize
 
 ## API
 
@@ -35,7 +35,7 @@ in code:
 ```javascript
 var fs = require("fs");
 var browserify = require("browserify");
-var externalize = require("browserify-externalize");
+var externalize = require("externalize");
 
 // Parent bundle with an entry point
 var parent = browserify("./index.js");
