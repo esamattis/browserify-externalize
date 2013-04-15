@@ -4,6 +4,10 @@
 
 Create external [Browserify][] bundles for lazy asynchronous loading
 
+Introduction to asynchronous module loading with Browserify:
+
+<http://esa-matti.suuronen.org/blog/2013/04/15/asynchronous-module-loading-with-browserify/>
+
 ## Install
 
     npm install externalize
