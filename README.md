@@ -20,7 +20,7 @@ The module exports a single function
 externalize(
     <parent bundle or array of parent bundles>,
     <bundle or arrays of bundles to be externalized from the parent bundles>,
-    <callback fucntion>
+    <callback function>
 );
 ```
 
