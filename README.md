@@ -1,3 +1,6 @@
+This module is not maintained anymore. Please try [substack/factor-bundle](https://github.com/substack/factor-bundle) instead
+
+
 [![build status](https://secure.travis-ci.org/epeli/browserify-externalize.png)](http://travis-ci.org/epeli/browserify-externalize)
 
 # externalize
