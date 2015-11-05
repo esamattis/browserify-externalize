@@ -34,14 +34,14 @@ BundleManager.prototype.resolveModules = function(bWrap) {
     // Dependencies can be resolved only when bundle.files is populated
     if (bWrap.bundle._pending === 0) {
         var opts = {
-            resolve: bWrap.bundle._resolve.bind(bWrap.bundle),
+            resolve: bWrap.bundle._bresolve.bind(bWrap.bundle),
             transform: bWrap.bundle._transforms,
             transformKey: [ 'browserify', 'transform' ]
         };
 
         mdeps(bWrap.bundle.files, opts).pipe(concatStream(function(err, modules) {
             if (err) return self.emit("error", err);
-            bWrap.modules = modules;
+            bWrap.modules = modules || [];
             if (self.areModulesReady()) self.emit("modules-ready");
         }));
     }
