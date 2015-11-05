@@ -41,7 +41,7 @@ BundleManager.prototype.resolveModules = function(bWrap) {
 
         mdeps(bWrap.bundle.files, opts).pipe(concatStream(function(err, modules) {
             if (err) return self.emit("error", err);
-            bWrap.modules = modules;
+            bWrap.modules = modules || [];
             if (self.areModulesReady()) self.emit("modules-ready");
         }));
     }
