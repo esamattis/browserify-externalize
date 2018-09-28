@@ -1,7 +1,7 @@
 This module is not maintained anymore. Please try [substack/factor-bundle](https://github.com/substack/factor-bundle) instead
 
 
-[![build status](https://secure.travis-ci.org/epeli/browserify-externalize.png)](http://travis-ci.org/epeli/browserify-externalize)
+[![build status](https://secure.travis-ci.org/epeli/browserify-externalize.png)](http://travis-ci.org/epeli/browserify-externalize) [![Greenkeeper badge](https://badges.greenkeeper.io/epeli/browserify-externalize.svg)](https://greenkeeper.io/)
 
 # externalize
 
