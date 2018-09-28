@@ -14,12 +14,12 @@
   "author": "Esa-Matti Suuronen",
   "license": "MIT",
   "dependencies": {
-    "module-deps": "~0.6.1",
-    "concat-stream": "~0.1.1"
+    "module-deps": "~6.1.0",
+    "concat-stream": "~1.6.2"
   },
   "devDependencies": {
-    "tap": "~0.4.1",
-    "browserify": "~2.11.0",
-    "coffeeify": "~0.4.0"
+    "tap": "~12.0.1",
+    "browserify": "~16.2.3",
+    "coffeeify": "~3.0.1"
   }
 }
